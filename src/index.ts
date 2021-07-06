@@ -1,16 +1,8 @@
-export const sum = (a: number, b: number) => {
-  if ('development' === process.env.NODE_ENV) {
-    console.log('boop');
-  }
-  console.log('test');
-  return a + b;
-};
-
 export interface ContractTxData {
   opCodeType: Uint8Array,
   vmVersion: number,
-  gasPrice: BigInt,
-  gasLimit: BigInt,
+  gasPrice: bigint,
+  gasLimit: bigint,
   contractAddress: Uint8Array, // TODO check type
   methodName: string,
   methodParameters: string, // TODO serialized/unserialized params?
@@ -22,12 +14,19 @@ export interface ContractTxData {
 */
 export const parse = (hex: string): ContractTxData => {
 
-  let bytes: Uint8Array = stringToHex(hex);
+  // Lengths, in byte chars (1 byte requires 2 chars)
+  let opcodeLength = 1 * 2; // byte
+  let vmVersionLength = 4 * 2; // uint32
+  let gasPriceLength = 8 * 2; // ulong
 
-  let opcode = bytes.slice(0, 1);
+  let opcode = stringToHex(hex.slice(0, opcodeLength));
+
+  let gasPrice = "0x" + hex.slice(opcodeLength + vmVersionLength, opcodeLength + vmVersionLength + gasPriceLength);
 
   return {
-    opCodeType: opcode    
+    opCodeType: opcode,
+    vmVersion: 1,
+    gasPrice: BigInt(gasPrice)
   } as ContractTxData;
 }
 
