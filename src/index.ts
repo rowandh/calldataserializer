@@ -27,10 +27,10 @@ export const parse = (hex: string): ContractTxData => {
 
   let currentLength = opcodeLength + vmVersionLength;
   
-  let gasPrice = "0x" + hex.slice(currentLength, currentLength + gasPriceLength);
+  let gasPrice = hex.slice(currentLength, currentLength + gasPriceLength);
   currentLength = currentLength + gasPriceLength;
 
-  let gasLimit = "0x" + hex.slice(currentLength, currentLength + gasLimitLength);
+  let gasLimit = hex.slice(currentLength, currentLength + gasLimitLength);
   currentLength = currentLength + gasLimitLength;
 
   // Assume we're only deserializing calls
@@ -48,8 +48,8 @@ export const parse = (hex: string): ContractTxData => {
   return {
     opCodeType: opcode,
     vmVersion: 1,
-    gasPrice: BigInt(gasPrice),
-    gasLimit: BigInt(gasLimit),
+    gasPrice: Buffer.from(gasPrice, 'hex').readBigUInt64LE(),
+    gasLimit: Buffer.from(gasLimit, 'hex').readBigUInt64LE(),
     contractAddress: contractAddress,
     methodName: methodName.toString("utf8")
   } as ContractTxData;
