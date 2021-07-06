@@ -1,3 +1,5 @@
+import * as rlp from 'rlp'
+
 export interface ContractTxData {
   opCodeType: Uint8Array,
   vmVersion: number,
@@ -36,12 +38,20 @@ export const parse = (hex: string): ContractTxData => {
   let contractAddress = stringToHex(hex.slice(currentLength, currentLength + contractAddressLength));
   currentLength = currentLength + contractAddressLength;
 
+  let remaining = hex.slice(currentLength);
+  let bbb = Buffer.from(remaining, "hex");
+  let decoded = (<unknown>rlp.decode(bbb)) as Buffer[];
+  let methodName = decoded[0];
+  let methodParams = decoded[1]; 
+
+  // The rest of the fields are RLP-encoded
   return {
     opCodeType: opcode,
     vmVersion: 1,
     gasPrice: BigInt(gasPrice),
     gasLimit: BigInt(gasLimit),
-    contractAddress: contractAddress
+    contractAddress: contractAddress,
+    methodName: methodName.toString("utf8")
   } as ContractTxData;
 }
 

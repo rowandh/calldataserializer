@@ -1,4 +1,5 @@
 import { parse, stringToHex } from '../src';
+import * as rlp from 'rlp'
 
 describe('deserialize', () => {
 
@@ -12,11 +13,12 @@ describe('deserialize', () => {
     let method = "c9874578656375746580";
     let hex = "c1010000000000000000000000ffffffffffffffff6400000000000000000000000000000000000000c9874578656375746580";
     let txData = parse(hex)
-    let opcode = new Uint8Array([192]);
+    let opcode = new Uint8Array([193]);
 
     expect(txData.opCodeType).toEqual(opcode);
     expect(txData.gasPrice).toEqual(BigInt("0x" + gasprice));
     expect(txData.gasLimit).toEqual(BigInt("0x" + gasLimit));
     expect(txData.contractAddress).toEqual(new Uint8Array(stringToHex(contractAddress)));
+    expect(txData.methodName).toEqual("Execute");
   });
 });
