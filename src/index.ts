@@ -22,8 +22,12 @@ export interface ContractTxData {
 */
 export const parse = (hex: string): ContractTxData => {
 
-  return {
+  let bytes: Uint8Array = stringToHex(hex);
 
+  let opcode = bytes.slice(0, 1);
+
+  return {
+    opCodeType: opcode    
   } as ContractTxData;
 }
 
@@ -35,4 +39,14 @@ export const stringToHex = (hex: string): Uint8Array => {
     }
 
     return new Uint8Array(bytes);
+}
+
+export const bytesToHex = (bytes: Uint8Array) => {
+  let hex: string[] = [];
+  for (let i = 0; i < bytes.length; i++) {
+    let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+    hex.push((current >>> 4).toString(16));
+    hex.push((current & 0xF).toString(16));
+  }
+  return hex.join("");
 }
