@@ -1,5 +1,4 @@
-import { parse, Prefix, stringToHex } from '../src';
-import * as rlp from 'rlp'
+import { parse, Prefix } from '../src';
 
 describe('deserialize', () => {
 
@@ -13,12 +12,12 @@ describe('deserialize', () => {
     let method = "c9874578656375746580";
     let hex = "c1010000000100000000000000ffffffffffffffff6400000000000000000000000000000000000000c9874578656375746580";
     let txData = parse(hex)
-    let opcode = new Uint8Array([193]);
+    let opcode = 193;
 
     expect(txData.opCodeType).toEqual(opcode);
     expect(txData.gasPrice).toEqual(BigInt(1));
     expect(txData.gasLimit).toEqual(BigInt("0x" + gasLimit));
-    expect(txData.contractAddress).toEqual(new Uint8Array(stringToHex(contractAddress)));
+    expect(txData.contractAddress).toEqual(Buffer.from(contractAddress, "hex"));
     expect(txData.methodName).toEqual("Execute");
   });
 
@@ -46,12 +45,12 @@ describe('deserialize', () => {
     let contractAddress = "6400000000000000000000000000000000000000";
     let hex = "c1010000000100000000000000ffffffffffffffff6400000000000000000000000000000000000000f88c8745786563757465b882f880820101820201850a74657374830373008504746573748506ffffff7f8505ffffffff8908ffffffffffffff7f8907ffffffffffffffff910bffffffffffffffffffffffffffffffffa10cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff950995d34980095380851902ccd9a1fb4c813c2cb639";
     let txData = parse(hex)
-    let opcode = new Uint8Array([193]);
+    let opcode = 193;
 
     expect(txData.opCodeType).toEqual(opcode);
     expect(txData.gasPrice).toEqual(BigInt(1));
     expect(txData.gasLimit).toEqual(BigInt("0x" + gasLimit));
-    expect(txData.contractAddress).toEqual(new Uint8Array(stringToHex(contractAddress)));
+    expect(txData.contractAddress).toEqual(Buffer.from(contractAddress, "hex"));
     expect(txData.methodName).toEqual("Execute");
     expect(txData.methodParameters[0].type).toEqual(Prefix.Bool);
     expect(txData.methodParameters[0].value).toEqual(true);

@@ -1,14 +1,13 @@
 import * as rlp from 'rlp'
 
 export interface ContractTxData {
-  opCodeType: Uint8Array,
+  opCodeType: number,
   vmVersion: number,
   gasPrice: bigint,
   gasLimit: bigint,
-  contractAddress: Uint8Array, // TODO check type
+  contractAddress: Buffer,
   methodName: string,
-  methodParameters: MethodParameter[], // TODO serialized/unserialized params?
-  contractExecutionCode: Uint8Array
+  methodParameters: MethodParameter[]
 }
 
 export enum Prefix {
@@ -45,7 +44,7 @@ export const parse = (hex: string): ContractTxData => {
   let gasLimitLength = 8 * 2; // ulong
   let contractAddressLength = 20 * 2; // Address
   
-  let opcode = stringToHex(hex.slice(0, opcodeLength));
+  let opcode = Buffer.from(hex.slice(0, opcodeLength), "hex").readUInt8();
 
   let currentLength = opcodeLength + vmVersionLength;
   
@@ -57,7 +56,7 @@ export const parse = (hex: string): ContractTxData => {
 
   // Assume we're only deserializing calls
   
-  let contractAddress = stringToHex(hex.slice(currentLength, currentLength + contractAddressLength));
+  let contractAddress = Buffer.from(hex.slice(currentLength, currentLength + contractAddressLength), "hex");
   currentLength = currentLength + contractAddressLength;
 
   let remaining = hex.slice(currentLength);
@@ -72,8 +71,8 @@ export const parse = (hex: string): ContractTxData => {
   return {
     opCodeType: opcode,
     vmVersion: 1,
-    gasPrice: Buffer.from(gasPrice, 'hex').readBigUInt64LE(),
-    gasLimit: Buffer.from(gasLimit, 'hex').readBigUInt64LE(),
+    gasPrice: Buffer.from(gasPrice, "hex").readBigUInt64LE(),
+    gasLimit: Buffer.from(gasLimit, "hex").readBigUInt64LE(),
     contractAddress: contractAddress,
     methodName: methodName.toString("utf8"),
     methodParameters
@@ -126,24 +125,4 @@ export const deserializePrimitiveValue = (type: number, primitiveBytes: Buffer):
     default:
       throw "Invalid type!";      
   }
-}
-
-export const stringToHex = (hex: string): Uint8Array => {
-    let bytes: number[] = [];
-
-    for (let c = 0; c < hex.length; c += 2) {
-      bytes.push(parseInt(hex.substr(c, 2), 16));
-    }
-
-    return new Uint8Array(bytes);
-}
-
-export const bytesToHex = (bytes: Uint8Array) => {
-  let hex: string[] = [];
-  for (let i = 0; i < bytes.length; i++) {
-    let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
-    hex.push((current >>> 4).toString(16));
-    hex.push((current & 0xF).toString(16));
-  }
-  return hex.join("");
 }
