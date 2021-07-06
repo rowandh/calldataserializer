@@ -18,15 +18,18 @@ export const parse = (hex: string): ContractTxData => {
   let opcodeLength = 1 * 2; // byte
   let vmVersionLength = 4 * 2; // uint32
   let gasPriceLength = 8 * 2; // ulong
+  let gasLimitLength = 8 * 2; // ulong
 
   let opcode = stringToHex(hex.slice(0, opcodeLength));
 
   let gasPrice = "0x" + hex.slice(opcodeLength + vmVersionLength, opcodeLength + vmVersionLength + gasPriceLength);
-
+  let gasLimit = "0x" + hex.slice(opcodeLength + vmVersionLength + gasPriceLength, opcodeLength + vmVersionLength + gasPriceLength + gasLimitLength);
+  
   return {
     opCodeType: opcode,
     vmVersion: 1,
-    gasPrice: BigInt(gasPrice)
+    gasPrice: BigInt(gasPrice),
+    gasLimit: BigInt(gasLimit)
   } as ContractTxData;
 }
 
