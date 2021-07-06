@@ -7,9 +7,31 @@ export interface ContractTxData {
   gasLimit: bigint,
   contractAddress: Uint8Array, // TODO check type
   methodName: string,
-  methodParameters: string, // TODO serialized/unserialized params?
+  methodParameters: MethodParameter[], // TODO serialized/unserialized params?
   contractExecutionCode: Uint8Array
 }
+
+export enum Prefix {
+  Bool = 1,
+  Byte = 2,
+  Char = 3,
+  String = 4,
+  UInt = 5,
+  Int = 6,
+  ULong = 7,
+  Long = 8,
+  Address = 9,
+  ByteArray = 10,
+  UInt128 = 11,
+  UInt256 = 12
+};
+
+type MethodParameterValue = number | bigint | string | Buffer | boolean;
+
+export interface MethodParameter {
+  type: Prefix,
+  value: MethodParameterValue
+};
 
 /*
   Parses a hexadecimal string and interprets the smart contract data within.
@@ -44,6 +66,8 @@ export const parse = (hex: string): ContractTxData => {
   let methodName = decoded[0];
   let methodParams = decoded[1]; 
 
+  let methodParameters = methodParams != null && methodParams.length > 0 ? deserializeMethodParams(methodParams) : [];  
+
   // The rest of the fields are RLP-encoded
   return {
     opCodeType: opcode,
@@ -51,8 +75,57 @@ export const parse = (hex: string): ContractTxData => {
     gasPrice: Buffer.from(gasPrice, 'hex').readBigUInt64LE(),
     gasLimit: Buffer.from(gasLimit, 'hex').readBigUInt64LE(),
     contractAddress: contractAddress,
-    methodName: methodName.toString("utf8")
+    methodName: methodName.toString("utf8"),
+    methodParameters
   } as ContractTxData;
+}
+
+export const deserializeMethodParams = (rawMethodParams: Buffer): MethodParameter[] => {
+
+  let innerList =  (<unknown>rlp.decode(rawMethodParams)) as Buffer[];  
+
+  return innerList.map(deserializeMethodParam);
+}
+
+export const deserializeMethodParam = (methodParam: Buffer): MethodParameter => {
+  let prefix = methodParam[0];
+  let valueBytes = methodParam.slice(1);
+
+  let value = deserializePrimitiveValue(prefix, valueBytes);
+
+  return {
+    type: prefix,
+    value
+  } as MethodParameter;
+}
+
+export const deserializePrimitiveValue = (type: number, primitiveBytes: Buffer): MethodParameterValue => {
+  switch (type) {
+    case Prefix.Address:
+      return primitiveBytes;
+    case Prefix.Bool:
+      return primitiveBytes.readUIntLE(0, 1) == 1 ? true : false;
+    case Prefix.Byte:
+    case Prefix.ByteArray:
+      return primitiveBytes;
+    case Prefix.Char:
+      return String.fromCharCode(primitiveBytes.readInt8());
+    case Prefix.String:
+      return primitiveBytes.toString("utf8");
+    case Prefix.Int:
+      return primitiveBytes.readInt32LE();
+    case Prefix.UInt:
+      return primitiveBytes.readUInt32LE();
+    case Prefix.Long:
+      return primitiveBytes.readBigInt64LE();
+    case Prefix.ULong:
+      return primitiveBytes.readBigUInt64LE();
+    case Prefix.UInt128:
+    case Prefix.UInt256:
+      return primitiveBytes; // TODO use BigNum for these types
+    default:
+      throw "Invalid type!";      
+  }
 }
 
 export const stringToHex = (hex: string): Uint8Array => {
