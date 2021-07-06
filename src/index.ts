@@ -19,17 +19,29 @@ export const parse = (hex: string): ContractTxData => {
   let vmVersionLength = 4 * 2; // uint32
   let gasPriceLength = 8 * 2; // ulong
   let gasLimitLength = 8 * 2; // ulong
-
+  let contractAddressLength = 20 * 2; // Address
+  
   let opcode = stringToHex(hex.slice(0, opcodeLength));
 
-  let gasPrice = "0x" + hex.slice(opcodeLength + vmVersionLength, opcodeLength + vmVersionLength + gasPriceLength);
-  let gasLimit = "0x" + hex.slice(opcodeLength + vmVersionLength + gasPriceLength, opcodeLength + vmVersionLength + gasPriceLength + gasLimitLength);
+  let currentLength = opcodeLength + vmVersionLength;
   
+  let gasPrice = "0x" + hex.slice(currentLength, currentLength + gasPriceLength);
+  currentLength = currentLength + gasPriceLength;
+
+  let gasLimit = "0x" + hex.slice(currentLength, currentLength + gasLimitLength);
+  currentLength = currentLength + gasLimitLength;
+
+  // Assume we're only deserializing calls
+  
+  let contractAddress = stringToHex(hex.slice(currentLength, currentLength + contractAddressLength));
+  currentLength = currentLength + contractAddressLength;
+
   return {
     opCodeType: opcode,
     vmVersion: 1,
     gasPrice: BigInt(gasPrice),
-    gasLimit: BigInt(gasLimit)
+    gasLimit: BigInt(gasLimit),
+    contractAddress: contractAddress
   } as ContractTxData;
 }
 
