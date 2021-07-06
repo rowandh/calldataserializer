@@ -17,8 +17,22 @@ export interface ContractTxData {
   contractExecutionCode: Uint8Array
 }
 
+/*
+  Parses a hexadecimal string and interprets the smart contract data within.
+*/
 export const parse = (hex: string): ContractTxData => {
+
   return {
 
   } as ContractTxData;
+}
+
+export const stringToHex = (hex: string): Uint8Array => {
+    let bytes: number[] = [];
+
+    for (let c = 0; c < hex.length; c += 2) {
+      bytes.push(parseInt(hex.substr(c, 2), 16));
+    }
+
+    return new Uint8Array(bytes);
 }
