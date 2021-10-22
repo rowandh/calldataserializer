@@ -68,13 +68,13 @@ describe('deserialize', () => {
     expect(txData.methodParameters[6].type).toEqual(Prefix.UInt);
     expect(txData.methodParameters[6].value).toEqual(4294967295);
     expect(txData.methodParameters[7].type).toEqual(Prefix.Long);
-    expect(txData.methodParameters[7].value).toEqual(BigInt("0x7FFFFFFFFFFFFFFF")); // long.MaxValue
+    expect(txData.methodParameters[7].value).toEqual(new BN("7FFFFFFFFFFFFFFF", "hex", "le")); // long.MaxValue
     expect(txData.methodParameters[8].type).toEqual(Prefix.ULong);
-    expect(txData.methodParameters[8].value).toEqual(BigInt("0xFFFFFFFFFFFFFFFF")); // ulong.MaxValue
+    expect(txData.methodParameters[8].value).toEqual(new BN("FFFFFFFFFFFFFFFF", "hex", "le")); // ulong.MaxValue
     expect(txData.methodParameters[9].type).toEqual(Prefix.UInt128);
-    expect(txData.methodParameters[9].value).toEqual(Buffer.from("ffffffffffffffffffffffffffffffff", "hex")); // UInt128.MaxValue
+    expect(txData.methodParameters[9].value).toEqual(new BN("ffffffffffffffffffffffffffffffff", "hex", "le")); // UInt128.MaxValue
     expect(txData.methodParameters[10].type).toEqual(Prefix.UInt256);
-    expect(txData.methodParameters[10].value).toEqual(Buffer.from("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "hex")); // UInt256.MaxValue
+    expect(txData.methodParameters[10].value).toEqual(new BN("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "hex", "le")); // UInt256.MaxValue
     expect(txData.methodParameters[11].type).toEqual(Prefix.Address);
     expect(txData.methodParameters[11].value).toEqual(Buffer.from("95D34980095380851902ccd9A1Fb4C813C2cb639", "hex"));
   });  
@@ -143,19 +143,19 @@ describe('serialize', () => {
         },
         {
           type: Prefix.Long,
-          value: BigInt("0x7FFFFFFFFFFFFFFF")
+          value: new BN("7FFFFFFFFFFFFFFF", "hex", "le")
         },
         {
           type: Prefix.ULong,
-          value: BigInt("0xFFFFFFFFFFFFFFFF")
+          value: new BN("FFFFFFFFFFFFFFFF", "hex", "le")
         },
         {
           type: Prefix.UInt128,
-          value: Buffer.from("ffffffffffffffffffffffffffffffff", "hex")
+          value: new BN("ffffffffffffffffffffffffffffffff", "hex", "le")
         },
         {
           type: Prefix.UInt256,
-          value:Buffer.from("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "hex")
+          value: new BN("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "hex", "le")
         },
         {
           type: Prefix.Address,
