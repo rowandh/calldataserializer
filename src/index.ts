@@ -4,8 +4,8 @@ import BN from 'bn.js';
 export interface ContractTxData {
   opCodeType: number,
   vmVersion: number,
-  gasPrice: bigint,
-  gasLimit: bigint,
+  gasPrice: BN,
+  gasLimit: BN,
   contractAddress: Buffer,
   methodName: string,
   methodParameters: MethodParameter[]
@@ -124,11 +124,8 @@ const serializeCallContract = (data: ContractTxData): string => {
   let vmVersionBytes = Buffer.alloc(4);
   vmVersionBytes.writeInt32LE(data.vmVersion);
 
-  let gasPriceBytes = Buffer.alloc(8);
-  gasPriceBytes.writeBigUInt64LE(data.gasPrice);
-
-  let gasLimitBytes = Buffer.alloc(8)
-  gasLimitBytes.writeBigUInt64LE(data.gasLimit);
+  let gasPriceBytes = data.gasPrice.toBuffer("le", 8);
+  let gasLimitBytes = data.gasLimit.toBuffer("le", 8);
 
   let prefix = Buffer.concat([opCodeByte, vmVersionBytes, gasPriceBytes, gasLimitBytes])
 
@@ -212,8 +209,8 @@ export const parse = (hex: string): ContractTxData => {
   return {
     opCodeType: opcode,
     vmVersion: 1,
-    gasPrice: Buffer.from(gasPrice, "hex").readBigUInt64LE(),
-    gasLimit: Buffer.from(gasLimit, "hex").readBigUInt64LE(),
+    gasPrice: new BN(gasPrice, "hex", "le"),
+    gasLimit: new BN(gasLimit, "hex", "le"),
     contractAddress: contractAddress,
     methodName: methodName.toString("utf8"),
     methodParameters
