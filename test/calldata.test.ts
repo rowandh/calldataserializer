@@ -1,3 +1,4 @@
+import { BN } from 'bn.js';
 import { parse, serialize, Prefix, ContractTxData, OP_CREATECONTRACT, MethodParameter, OP_CALLCONTRACT } from '../src';
 
 describe('deserialize', () => {

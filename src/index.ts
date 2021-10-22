@@ -269,37 +269,31 @@ export const deserializePrimitiveValue = (type: number, primitiveBytes: Buffer):
 export const serializePrimitiveValue = (parameter: MethodParameter): Buffer => {
   switch (parameter.type) {
     case Prefix.Address: // Should already be a buffer
-      return <Buffer>parameter.value;
+      return parameter.value;
     case Prefix.Bool:
       return parameter.value ? Buffer.from([1]) : Buffer.from([0]);
     case Prefix.Byte:
     case Prefix.ByteArray:
-      return <Buffer>parameter.value;
+      return parameter.value;
     case Prefix.Char:
       let char = Buffer.alloc(2); // C# sizeof(char) is 2 bytes, the first is ASCII and the 2nd is blank
-      char.writeInt16LE((<string>parameter.value).charCodeAt(0));
+      char.writeInt16LE((parameter.value).charCodeAt(0));
       return char;
     case Prefix.String:
-      return Buffer.from(<string>parameter.value);
+      return Buffer.from(parameter.value);
     case Prefix.Int:
       let int32 = Buffer.alloc(4);
-      int32.writeInt32LE(<number>parameter.value);
+      int32.writeInt32LE(parameter.value);
       return int32;
     case Prefix.UInt:
       let uint32 = Buffer.alloc(4);
-      uint32.writeUInt32LE(<number>parameter.value);
+      uint32.writeUInt32LE(parameter.value);
       return uint32;
     case Prefix.Long:
-      let long = Buffer.alloc(8);
-      long.writeBigInt64LE(<bigint>parameter.value);
-      return long;
     case Prefix.ULong:
-      let ulong = Buffer.alloc(8);
-      ulong.writeBigUInt64LE(<bigint>parameter.value);
-      return ulong;
     case Prefix.UInt128:
     case Prefix.UInt256:
-      return <Buffer>parameter.value; // TODO use BigNum for these types
+      return parameter.value.toBuffer();
     default:
       throw "Invalid type!";      
   }
