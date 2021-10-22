@@ -69,7 +69,7 @@ describe('deserialize', () => {
     expect(txData.methodParameters[6].type).toEqual(Prefix.UInt);
     expect(txData.methodParameters[6].value).toEqual(4294967295);
     expect(txData.methodParameters[7].type).toEqual(Prefix.Long);
-    expect(txData.methodParameters[7].value).toEqual(new BN("7FFFFFFFFFFFFFFF", "hex", "le")); // long.MaxValue
+    expect(txData.methodParameters[7].value).toEqual(new BN("FFFFFFFFFFFFFF7F", "hex", "le")); // long.MaxValue
     expect(txData.methodParameters[8].type).toEqual(Prefix.ULong);
     expect(txData.methodParameters[8].value).toEqual(new BN("FFFFFFFFFFFFFFFF", "hex", "le")); // ulong.MaxValue
     expect(txData.methodParameters[9].type).toEqual(Prefix.UInt128);
@@ -144,7 +144,7 @@ describe('serialize', () => {
         },
         {
           type: Prefix.Long,
-          value: new BN("7FFFFFFFFFFFFFFF", "hex", "le")
+          value: new BN("FFFFFFFFFFFFFF7F", "hex", "le")
         },
         {
           type: Prefix.ULong,

@@ -257,7 +257,7 @@ export const deserializePrimitiveValue = (type: number, primitiveBytes: Buffer):
     case Prefix.ULong:
     case Prefix.UInt128:
     case Prefix.UInt256:
-      return new BN(primitiveBytes);
+      return new BN(primitiveBytes, "le");
     default:
       throw "Invalid type!";      
   }
@@ -287,10 +287,13 @@ export const serializePrimitiveValue = (parameter: MethodParameter): Buffer => {
       uint32.writeUInt32LE(parameter.value);
       return uint32;
     case Prefix.Long:
+      return parameter.value.toBuffer("le", 8);
     case Prefix.ULong:
+      return parameter.value.toBuffer("le", 8);
     case Prefix.UInt128:
+      return parameter.value.toBuffer("le", 16);
     case Prefix.UInt256:
-      return parameter.value.toBuffer();
+      return parameter.value.toBuffer("le", 32);
     default:
       throw "Invalid type!";      
   }
