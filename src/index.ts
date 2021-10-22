@@ -1,4 +1,5 @@
 import * as rlp from 'rlp'
+import BN from 'bn.js';
 
 export interface ContractTxData {
   opCodeType: number,
