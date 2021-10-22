@@ -172,4 +172,10 @@ describe('serialize', () => {
     // Verified in FullNode
     expect(hex).toEqual(expectedHex);
   });
+
+  it('should roundtrip hex correctly', () => {
+    let hex = "c1010000000100000000000000ffffffffffffffff6400000000000000000000000000000000000000f88c8745786563757465b882f880820101820201850a74657374830373008504746573748506ffffff7f8505ffffffff8908ffffffffffffff7f8907ffffffffffffffff910bffffffffffffffffffffffffffffffffa10cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff950995d34980095380851902ccd9a1fb4c813c2cb639";
+
+    expect(hex).toEqual(serialize(parse(hex)));
+  });
 });
