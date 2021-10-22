@@ -7,7 +7,7 @@ describe('deserialize', () => {
     // vmversion 1, gasprice 1, gaslimit 18446744073709551615, method name
     let oo = "c1";
     let vmversion = "0100";
-    let gasprice = "0100000000000000";
+    let gasprice = "0100000000000000"; // Use the full-width gasprice to ensure BNs are comparable
     let gasLimit = "ffffffffffffffff";
     let contractAddress = "6400000000000000000000000000000000000000";
     let method = "c9874578656375746580";
@@ -15,9 +15,9 @@ describe('deserialize', () => {
     let txData = parse(hex)
     let opcode = 193;
 
-
+    expect(txData.vmVersion).toEqual(1)
     expect(txData.opCodeType).toEqual(opcode);
-    expect(txData.gasPrice.toBuffer("le", 8)).toEqual(new BN(1, "le").toBuffer("le", 8));
+    expect(txData.gasPrice).toEqual(new BN(gasprice, "hex", "le"));
     expect(txData.gasLimit).toEqual(new BN(gasLimit, "hex", "le"));
     expect(txData.contractAddress).toEqual(Buffer.from(contractAddress, "hex"));
     expect(txData.methodName).toEqual("Execute");
@@ -110,7 +110,7 @@ describe('serialize', () => {
       opCodeType: OP_CALLCONTRACT,
       vmVersion: 1,
       contractAddress: Buffer.from("6400000000000000000000000000000000000000", "hex"),
-      gasPrice: new BN(1),
+      gasPrice: new BN("0100000000000000", "hex", "le"),
       gasLimit: new BN(gasLimit, "hex", "le"),
       methodName: "Execute",
       methodParameters: [
@@ -177,5 +177,69 @@ describe('serialize', () => {
     let hex = "c1010000000100000000000000ffffffffffffffff6400000000000000000000000000000000000000f88c8745786563757465b882f880820101820201850a74657374830373008504746573748506ffffff7f8505ffffffff8908ffffffffffffff7f8907ffffffffffffffff910bffffffffffffffffffffffffffffffffa10cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff950995d34980095380851902ccd9a1fb4c813c2cb639";
 
     expect(hex).toEqual(serialize(parse(hex)));
+  });
+
+  it('should roundtrip objects correctly', () => {
+
+    let contractTxData = {
+      opCodeType: OP_CALLCONTRACT,
+      vmVersion: 1,
+      contractAddress: Buffer.from("6400000000000000000000000000000000000000", "hex"),
+      gasPrice: new BN("0100000000000000", "hex", "le"),
+      gasLimit: new BN("ffffffffffffffff", "hex", "le"),
+      methodName: "Execute",
+      methodParameters: [
+        {
+          type: Prefix.Bool,
+          value: true
+        },
+        {
+          type: Prefix.Byte,
+          value: Buffer.from([1])
+        },
+        {
+          type: Prefix.ByteArray,
+          value: Buffer.from("test", "utf8")
+        },
+        {
+          type: Prefix.Char,
+          value: "s"
+        },
+        {
+          type: Prefix.String,
+          value: "test"
+        },
+        {
+          type: Prefix.Int,
+          value: 2147483647
+        },
+        {
+          type: Prefix.UInt,
+          value: 4294967295
+        },
+        {
+          type: Prefix.Long,
+          value: new BN("FFFFFFFFFFFFFF7F", "hex", "le")
+        },
+        {
+          type: Prefix.ULong,
+          value: new BN("FFFFFFFFFFFFFFFF", "hex", "le")
+        },
+        {
+          type: Prefix.UInt128,
+          value: new BN("ffffffffffffffffffffffffffffffff", "hex", "le")
+        },
+        {
+          type: Prefix.UInt256,
+          value: new BN("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "hex", "le")
+        },
+        {
+          type: Prefix.Address,
+          value: Buffer.from("95D34980095380851902ccd9A1Fb4C813C2cb639", "hex")
+        }
+      ]
+    } as ContractTxData;
+
+    expect(contractTxData).toEqual(parse(serialize(contractTxData)));
   });
 });
