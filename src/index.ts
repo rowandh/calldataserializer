@@ -9,7 +9,7 @@ export interface ContractTxData {
   contractAddress: Buffer,
   methodName: string,
   methodParameters: MethodParameter[]
-}
+};
 
 export enum Prefix {
   Bool = 1,
@@ -26,21 +26,75 @@ export enum Prefix {
   UInt256 = 12
 };
 
-type MethodParameterValue = number | bigint | string | Buffer | boolean;
+type Address = {
+  type: Prefix.Address,
+  value: Buffer
+};
+
+type Bool = {
+  type: Prefix.Bool,
+  value: boolean
+};
+
+type Byte = {
+  type: Prefix.Byte,
+  value: Buffer
+};
+
+type ByteArray = {
+  type: Prefix.ByteArray,
+  value: Buffer
+};
+
+type Char = {
+  type: Prefix.Char,
+  value: string
+};
+
+type String = {
+  type: Prefix.String,
+  value: string
+};
+
+type Int = {
+  type: Prefix.Int,
+  value: number
+};
+
+type UInt = {
+  type: Prefix.UInt,
+  value: number
+};
+
+type Long = {
+  type: Prefix.Long,
+  value: BN
+};
+
+type ULong = {
+  type: Prefix.ULong,
+  value: BN
+};
+
+type UInt128 = {
+  type: Prefix.UInt128,
+  value: BN 
+};
+
+type UInt256 = {
+  type: Prefix.UInt256,
+  value: BN 
+};
 
 export const OP_CREATECONTRACT = 0xc0;
 export const OP_CALLCONTRACT = 0xc1;
 
-export interface MethodParameter {
-  type: Prefix,
-  value: MethodParameterValue
-};
-
+export type MethodParameter = Address | Bool | Byte | ByteArray | Char | String | Int | UInt | Long | ULong | UInt128 | UInt256
+type MethodParameterValue = number | boolean | string | Buffer | BN;
 /*
   Accepts the input call data and serializes it to a hex string.
 */
 export const serialize = (data: ContractTxData): string => {
-  
   if (isCallContract(data.opCodeType)) {
     return serializeCallContract(data);
   }
@@ -195,20 +249,18 @@ export const deserializePrimitiveValue = (type: number, primitiveBytes: Buffer):
     case Prefix.ByteArray:
       return primitiveBytes;
     case Prefix.Char:
-      return String.fromCharCode(primitiveBytes.readInt8());
+      return primitiveBytes.toString('utf16le');
     case Prefix.String:
-      return primitiveBytes.toString("utf8");
+      return primitiveBytes.toString('utf8');
     case Prefix.Int:
       return primitiveBytes.readInt32LE();
     case Prefix.UInt:
       return primitiveBytes.readUInt32LE();
     case Prefix.Long:
-      return primitiveBytes.readBigInt64LE();
     case Prefix.ULong:
-      return primitiveBytes.readBigUInt64LE();
     case Prefix.UInt128:
     case Prefix.UInt256:
-      return primitiveBytes; // TODO use BigNum for these types
+      return new BN(primitiveBytes);
     default:
       throw "Invalid type!";      
   }
