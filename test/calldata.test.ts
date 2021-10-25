@@ -1,5 +1,5 @@
 import { BN } from 'bn.js';
-import { parse, serialize, Prefix, ContractTxData, OP_CREATECONTRACT, MethodParameter, OP_CALLCONTRACT } from '../src';
+import { parse, serialize, Prefix, ContractTxData, OP_CREATECONTRACT, MethodParameter, OP_CALLCONTRACT, deserializeMethodParam, deserializeString, parseString, LONG_MAXVALUE, UINT_MAXVALUE, INT_MAXVALUE, ULONG_MAXVALUE, UINT128_MAXVALUE, UINT256_MAXVALUE } from '../src';
 
 describe('deserialize', () => {
 
@@ -241,5 +241,186 @@ describe('serialize', () => {
     } as ContractTxData;
 
     expect(contractTxData).toEqual(parse(serialize(contractTxData)));
+  });
+});
+
+describe('deserialize strings', () => {
+  it('should parse a string param', () => {
+    let stringData = "4#Test";
+
+    let param = parseString(stringData);
+
+    expect(param).toEqual({
+      prefix: "4",
+      value: "Test"
+    });
+  });
+
+  it('parse a string param with a hash and a prefix > 9', () => {
+    let stringData = "10#Te#st";
+
+    let param = parseString(stringData);
+
+    expect(param).toEqual({
+      prefix: "10",
+      value: "Te#st"
+    });
+  });
+
+  it('should deserialize a false bool param to a methodparam', () => {
+    let prefix = Prefix.Bool;
+    let value = "False"; 
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: false
+    } as MethodParameter);
+  });
+
+  it('should deserialize a true bool param to a methodparam', () => {
+    let prefix = Prefix.Bool;
+    let value = "True"; 
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: true
+    } as MethodParameter);
+  });
+
+  it('should deserialize an int param to a methodparam', () => {
+    let prefix = Prefix.Int;
+    let value = INT_MAXVALUE; // int.MaxValue
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: +value
+    } as MethodParameter);
+  });
+
+  it('should deserialize a uint param to a methodparam', () => {
+    let prefix = Prefix.UInt;
+    let value = UINT_MAXVALUE; // uint.MaxValue
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: +value
+    } as MethodParameter);
+  });
+
+  it('should deserialize a long param to a methodparam', () => {
+    let prefix = Prefix.Long;
+    let value = LONG_MAXVALUE; // int.MaxValue
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: value
+    } as MethodParameter);
+  });
+
+  it('should deserialize a ulong param to a methodparam', () => {
+    let prefix = Prefix.ULong;
+    let value = ULONG_MAXVALUE; // int.MaxValue
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: value
+    } as MethodParameter);
+  });
+
+  it('should deserialize a uint128 param to a methodparam', () => {
+    let prefix = Prefix.UInt128;
+    let value = UINT128_MAXVALUE; // int.MaxValue
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: value
+    } as MethodParameter);
+  });
+
+  it('should deserialize a uint256 param to a methodparam', () => {
+    let prefix = Prefix.UInt256;
+    let value = UINT256_MAXVALUE; // int.MaxValue
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: value
+    } as MethodParameter);
+  });
+
+
+  it('should deserialize a string param to a methodparam', () => {
+    let prefix = Prefix.String;
+    let value = "Te#st";
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: value
+    } as MethodParameter);
+  });
+
+  it('should deserialize a char param to a methodparam', () => {
+    let prefix = Prefix.Char;
+    let value = "#st";
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: value
+    } as MethodParameter);
+  });
+
+  it('should deserialize a byte param to a methodparam', () => {
+    let prefix = Prefix.Byte;
+    let value = "FA";
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: Buffer.from([0xFA])
+    } as MethodParameter);
+  });
+
+  it('should deserialize a byte array param to a methodparam', () => {
+    let prefix = Prefix.ByteArray;
+    let value = "AABBCCDD";
+    let stringData = `${prefix}#${value}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: Buffer.from([0xAA, 0xBB, 0xCC, 0xDD])
+    } as MethodParameter);
   });
 });

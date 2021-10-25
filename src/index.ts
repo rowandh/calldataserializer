@@ -26,6 +26,11 @@ export enum Prefix {
   UInt256 = 12
 };
 
+type ParsedStringParam = {
+  prefix: string,
+  value: string
+};
+
 type Address = {
   type: Prefix.Address,
   value: Buffer
@@ -88,6 +93,12 @@ type UInt256 = {
 
 export const OP_CREATECONTRACT = 0xc0;
 export const OP_CALLCONTRACT = 0xc1;
+export const INT_MAXVALUE = 2147483647;
+export const UINT_MAXVALUE = 4294967295;
+export const LONG_MAXVALUE = new BN("9223372036854775807");
+export const ULONG_MAXVALUE = new BN("18446744073709551615");
+export const UINT128_MAXVALUE = new BN("340282366920938463463374607431768211455");
+export const UINT256_MAXVALUE = new BN("115792089237316195423570985008687907853269984665640564039457584007913129639935");
 
 export type MethodParameter = Address | Bool | Byte | ByteArray | Char | String | Int | UInt | Long | ULong | UInt128 | UInt256
 type MethodParameterValue = number | boolean | string | Buffer | BN;
@@ -224,6 +235,32 @@ export const deserializeMethodParams = (rawMethodParams: Buffer): MethodParamete
   return innerList.map(deserializeMethodParam);
 }
 
+export const deserializeString = (methodParam: string): MethodParameter => {
+  let data = parseString(methodParam);
+  
+  let value = deserializeStringValue(data);
+
+  return {
+    type: +data.prefix,
+    value
+  };
+}
+
+export const parseString = (methodParam: string): ParsedStringParam => {
+  let firstHash = methodParam.indexOf('#', 0);
+
+  if (firstHash == -1)
+    throw "Invalid string parameter: missing # separator";
+
+  let prefixString = methodParam.slice(0, firstHash);
+  let valueString = methodParam.slice(firstHash + 1);
+
+  return {
+    prefix: prefixString,
+    value: valueString
+  };
+}
+
 export const deserializeMethodParam = (methodParam: Buffer): MethodParameter => {
   let prefix = methodParam[0];
   let valueBytes = methodParam.slice(1);
@@ -235,6 +272,81 @@ export const deserializeMethodParam = (methodParam: Buffer): MethodParameter => 
     value
   } as MethodParameter;
 }
+
+export const deserializeStringValue = (param: ParsedStringParam): MethodParameterValue => {
+  switch(+param.prefix) {
+    // case Prefix.Address:
+    //   return primitiveBytes;
+    case Prefix.Bool: {
+      // C# serializer for bool evaluates to "True" and "False" strings
+      let lowerValue = param.value.toLowerCase();
+      if (lowerValue == "true")
+        return true;
+
+      if (lowerValue == "false")
+        return false;
+
+      throw "Invalid bool param";
+    }
+      
+    case Prefix.Byte: {
+      let buffer = Buffer.from(param.value, "hex");
+      if (buffer.length > 1)
+        throw "Invalid byte param (multiple bytes present when only 1 byte expected)";
+      return buffer;
+    }
+    case Prefix.ByteArray:
+      return Buffer.from(param.value, "hex");
+    case Prefix.Char:
+      return param.value;
+    case Prefix.String:
+      return param.value;
+    case Prefix.Int: {
+      let int = parseInt(param.value);
+      if (int > INT_MAXVALUE)
+        throw "Int greater than int.MaxValue";
+      return int;
+    }
+    case Prefix.UInt: {
+      let uint = parseInt(param.value);
+
+      if (uint > UINT_MAXVALUE)
+        throw "UInt greater than uint.MaxValue";
+      
+      return uint;
+    }
+    case Prefix.Long: {
+      let bn = new BN(param.value);
+      if (bn > LONG_MAXVALUE)
+        throw "Long greater than long.MaxValue";
+      
+      return bn;
+    }
+    case Prefix.ULong: {
+      let bn = new BN(param.value);
+      if (bn > ULONG_MAXVALUE)
+        throw "ULong greater than ulong.MaxValue";
+      
+      return bn;
+    }
+    case Prefix.UInt128: {
+      let bn = new BN(param.value);
+      if (bn > UINT128_MAXVALUE)
+        throw "UInt128 greater than long.MaxValue";
+      
+      return bn;
+    }
+    case Prefix.UInt256: {
+      let bn = new BN(param.value);
+      if (bn > UINT256_MAXVALUE)
+        throw "UInt256 greater than long.MaxValue";
+      
+      return bn;
+    }
+    default:
+      throw "Invalid type!";
+  }
+};
 
 export const deserializePrimitiveValue = (type: number, primitiveBytes: Buffer): MethodParameterValue => {
   switch (type) {
@@ -298,3 +410,5 @@ export const serializePrimitiveValue = (parameter: MethodParameter): Buffer => {
       throw "Invalid type!";      
   }
 }
+
+// Deserialize strings from JSON to buffers
