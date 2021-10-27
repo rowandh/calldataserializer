@@ -275,8 +275,16 @@ export const deserializeMethodParam = (methodParam: Buffer): MethodParameter => 
 
 export const deserializeStringValue = (param: ParsedStringParam): MethodParameterValue => {
   switch(+param.prefix) {
-    // case Prefix.Address:
-    //   return primitiveBytes;
+    // Warning: Currently differs from the .NET implementation which uses a base58 address.
+    // Because we don't have access to an address type, we use a byte array to represent the address.
+    case Prefix.Address: {
+      let buffer = Buffer.from(param.value, "hex");
+
+      if (buffer.length !== 20)
+        throw "Invalid address: length is not 20 bytes";
+
+      return buffer;
+    }
     case Prefix.Bool: {
       // C# serializer for bool evaluates to "True" and "False" strings
       let lowerValue = param.value.toLowerCase();

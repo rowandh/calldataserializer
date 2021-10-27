@@ -423,4 +423,17 @@ describe('deserialize strings', () => {
       value: Buffer.from([0xAA, 0xBB, 0xCC, 0xDD])
     } as MethodParameter);
   });
+
+  it('should deserialize an address to a methodparam', () => {
+    let prefix = Prefix.Address;
+    let value = Buffer.alloc(20, 0xFF);
+    let stringData = `${prefix}#${value.toString('hex')}`;
+
+    let methodParam = deserializeString(stringData);
+
+    expect(methodParam).toEqual({
+      type: prefix,
+      value: value
+    } as MethodParameter);
+  });
 });
